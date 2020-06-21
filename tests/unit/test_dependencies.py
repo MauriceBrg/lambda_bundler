@@ -150,7 +150,35 @@ class DependenciesTestCases(unittest.TestCase):
                 )
             )
 
+    def test_create_or_return_zipped_dependencies(self):
+        """Assert that create_or_return_zipped_dependencies works as intended"""
 
+        with patch(self.module + "util.hash_string") as hash_mock, \
+            patch(self.module + "os.path.exists") as exists_mock, \
+            patch(self.module + "create_zipped_dependencies") as zip_mock:
+
+            hash_mock.return_value = "a"
+            exists_mock.return_value = True
+            zip_mock.return_value = "zipped"
+
+            # Already existing
+
+            result = target_module.create_or_return_zipped_dependencies(
+                requirements_information="bla",
+                output_directory_path="/some_path/"
+            )
+
+            self.assertEqual("/some_path/a.zip", result)
+
+            # Create new
+            exists_mock.return_value = False
+
+            result = target_module.create_or_return_zipped_dependencies(
+                requirements_information="bla",
+                output_directory_path="/some_path/"
+            )
+
+            self.assertEqual("zipped", result)
 
 if __name__ == "__main__":
     unittest.main()

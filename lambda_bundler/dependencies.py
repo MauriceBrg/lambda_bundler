@@ -83,6 +83,8 @@ def create_zipped_dependencies(requirements_information: str,
     :rtype: str
     """
 
+    # TODO: This could be refactored into smaller building blocks, it contains a lot of logic.
+
     directory_name = util.hash_string(requirements_information)
 
     build_directory = os.path.join(output_directory_path, directory_name)
@@ -120,3 +122,39 @@ def create_zipped_dependencies(requirements_information: str,
     shutil.rmtree(build_directory)
 
     return f"{output_file_name}.zip"
+
+
+def create_or_return_zipped_dependencies(requirements_information: str,
+                                         output_directory_path: str,
+                                         prefix_in_zip: str = None) -> str:
+    """
+    This function creates or returns a zip archive that holds the python
+    dependencies passed to this function via the requirements_information
+    argument - if it has been built previously that path is returned. The
+    output will be stored in output_directory_path with a unique name and
+    returned. If prefix_in_zip is set, requirements will be installed in a
+    subdirectory of the zip (useful for Lambda layers which require a
+    python prefix).
+
+
+    :param requirements_information: The content of the requirements.txt
+    :type requirements_information: str
+    :param output_directory_path: The directory to build the requirements and store the result in.
+    :type output_directory_path: str
+    :param prefix_in_zip: Optional prefix in the zip file, defaults to None
+    :type prefix_in_zip: str, optional
+    :return: Path to the finished zip archive.
+    :rtype: str
+    """
+
+    artifact_name = util.hash_string(requirements_information)
+
+    artifact_path = os.path.join(output_directory_path, f"{artifact_name}.zip")
+    if os.path.exists(artifact_path):
+        return artifact_path
+
+    return create_zipped_dependencies(
+        requirements_information=requirements_information,
+        output_directory_path=output_directory_path,
+        prefix_in_zip=prefix_in_zip
+    )
