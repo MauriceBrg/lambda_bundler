@@ -1,3 +1,4 @@
+"""Contains several utility functions for the lambda_bundler."""
 import hashlib
 import typing
 
@@ -26,5 +27,4 @@ def hash_string(string_to_hash: str) -> str:
     :return: Hexdigest of string_to_hash.
     :rtype: str
     """
-    
     return hashlib.sha256(string_to_hash.encode("utf-8")).hexdigest()

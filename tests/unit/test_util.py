@@ -5,6 +5,7 @@ import unittest
 import lambda_bundler.util as target_module
 
 class UtilTestCases(unittest.TestCase):
+    """Test cases for the util module"""
 
     def test_hash_string(self):
         """Asserts hash_string returns the correct sha256 hexdigest"""
@@ -25,15 +26,18 @@ class UtilTestCases(unittest.TestCase):
             # Set up test files
             with open(input_directory + "file1", "w") as handle:
                 handle.write(content_1)
-            
+
             with open(input_directory + "file2", "w") as handle:
                 handle.write(content_2)
-            
+
             expected_result = [content_1, content_2]
 
             actual_result = target_module.get_content_of_files(
                 input_directory + "file1",
                 input_directory + "file2"
             )
-        
+
         self.assertEqual(expected_result, actual_result)
+
+if __name__ == "__main__":
+    unittest.main()
