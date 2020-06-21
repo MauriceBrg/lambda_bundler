@@ -51,13 +51,29 @@ Lambda with dependencies:
 2. Hash merged requirements and check if {hash}.zip is already in CACHE_DIR - if yes -> Step 9
 3. Create {hash} directory in CACHE_DIR or replace if it already exists (if that's the case a broken installation exists)
 4. Create requirements.txt in {hash} directory with merged requirements
-5. Create python directory in {hash} directory
-6. Install requirements from requirements.txt into CACHE_DIR/{hash}/python/
-7. Zip CACHE_DIR/{hash} and store as CACHE_DIR/{hash}.zip
-8. Delete CACHE_DIR/{hash} directory (No longer needed)
-9. Copy CACHE_DIR/{hash}.zip to BUILD_DIR/{hash}.zip
-10. Extend BUILD_DIR/{hash}.zip with additional code
-11. Return BUILD_DIR/{hash}.zip
+5. Install requirements from requirements.txt into CACHE_DIR/{hash}/python/
+6. Zip CACHE_DIR/{hash} and store as CACHE_DIR/{hash}.zip
+7. Delete CACHE_DIR/{hash} directory (No longer needed)
+8. Hash list of Code directories -> {code_hash}
+9. Copy CACHE_DIR/{hash}.zip to BUILD_DIR/{code_hash}.zip  (otherwise we'd get problems with same dependencies and different code leading to the same deployment package)
+10. Extend BUILD_DIR/{code_hash}.zip with additional code
+11. Return BUILD_DIR/{code_hash}.zip
+PROBLEM: Same dependencies + different code lead to same .zip!
+
+Possible cross-platform builds could be done using docker instead of steps 4-6.
+
+>>> def collect_and_merge_requirements(*requirement_files: typing.List[str]) -> str:
+        pass
+
+>>> def hash_string(string_to_hash: str) -> str:
+        pass
+
+>>> def create_zipped_dependencies(requirements_information: str, output_directory_path: str, prefix_in_zip: str = None) -> str:
+        pass
+
+>>> def extend_zip(path_to_zip: str, list_of_directories: typing.List[str]) -> str:
+        pass
+
 """
 
 import zipfile

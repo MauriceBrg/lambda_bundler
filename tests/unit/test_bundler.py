@@ -1,14 +1,14 @@
 """
-Tests for the lambu.bundler module.
+Tests for the lambda_bundler.bundler module.
 """
 import os
 import tempfile
 import unittest
 import unittest.mock
 
-import lambu.bundler as target_module
+import lambda_bundler.bundler as target_module
 
-class TestLambuBundler(unittest.TestCase):
+class TestBundler(unittest.TestCase):
     """
     Test Cases for the python dependencies.
     """
@@ -19,7 +19,7 @@ class TestLambuBundler(unittest.TestCase):
         """
 
         path = os.path.join(
-            os.path.dirname(__file__), "..", "lambu"
+            os.path.dirname(__file__), "..", "..", "lambda_bundler"
         )
 
         with tempfile.TemporaryDirectory() as output_directory:

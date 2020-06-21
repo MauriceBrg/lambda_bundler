@@ -1,8 +1,8 @@
-"""Test cases for lambu.dependencies"""
+"""Test cases for lambda_bundler.dependencies"""
 
 import unittest
 
-import lambu.dependencies as target_module
+import lambda_bundler.dependencies as target_module
 
 class DependenciesTestCases(unittest.TestCase):
 

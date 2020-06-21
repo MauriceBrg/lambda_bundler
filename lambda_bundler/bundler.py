@@ -8,7 +8,7 @@ import shutil
 import tempfile
 import typing
 
-import lambu.dependencies as dependencies
+import lambda_bundler.dependencies as dependencies
 
 __DEFAULT_EXCLUDE_LIST = [
     "__pycache__"
