@@ -5,11 +5,10 @@ Contains functions to bundle python dependencies.
 import hashlib
 import os
 import shutil
-import subprocess
-import sys
 import tempfile
 import typing
 
+import lambu.dependencies as dependencies
 
 __DEFAULT_EXCLUDE_LIST = [
     "__pycache__"
@@ -80,9 +79,10 @@ def build_python_requirements_asset(requirements_file_path: str, output_director
         os.makedirs(install_target, exist_ok=True)
 
         # Install the dependencies
-        call = [sys.executable, "-m", "pip", "install", "-r", requirements_file_in_temp_directory,
-                "-t", install_target, "-I"]
-        subprocess.check_output(call)
+        dependencies.install_dependencies(
+            path_to_requirements=requirements_file_in_temp_directory,
+            path_to_target_directory=install_target
+        )
 
         output_path = f"{output_directory_path}/python_requirements_{requirements_path_hash}"
 

@@ -7,7 +7,7 @@ setuptools.setup(
     name="lambu",
     version="0.0.1",
     author="Maurice Borgmeier",
-    description="A utility to bundle python code and dependencies for deployment in AWS Lambda",
+    description="A utility to bundle python code and/or dependencies for deployment to AWS Lambda",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/MauriceBrg/lambu",
@@ -20,7 +20,8 @@ setuptools.setup(
     python_requires='>=3.6',
     extras_require={
         "dev": [
-            "pytest==5.4.3"
+            "pytest==5.4.3",
+            "pylint==2.5.3",
         ]
     }
 )

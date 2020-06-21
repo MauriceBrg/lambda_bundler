@@ -8,7 +8,6 @@ import unittest.mock
 
 import lambu.bundler as target_module
 
-
 class TestLambuBundler(unittest.TestCase):
     """
     Test Cases for the python dependencies.
@@ -34,6 +33,7 @@ class TestLambuBundler(unittest.TestCase):
 
     def test_build_python_requirements_asset(self):
         """
+        NOTE: This is technically an integration test!
         Assert the build_python_requirements_asset function is able to build a .zip for
         a simple requirements.txt
         """
