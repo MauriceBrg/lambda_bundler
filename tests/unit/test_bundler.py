@@ -1,10 +1,8 @@
 """
 Tests for the lambda_bundler.bundler module.
 """
-import os
-import tempfile
 import unittest
-import unittest.mock
+from unittest.mock import patch, ANY
 
 import lambda_bundler.bundler as target_module
 
@@ -13,48 +11,30 @@ class TestBundler(unittest.TestCase):
     Test Cases for the python dependencies.
     """
 
-    def test_build_lambda_deployment_package(self):
-        """
-        Asserts that the build process works with includes and excludes.
-        """
+    def setUp(self):
+        self.module = "lambda_bundler.bundler."
 
-        path = os.path.join(
-            os.path.dirname(__file__), "..", "..", "lambda_bundler"
-        )
+    def test_build_layer_package(self):
+        """Asserts build_layer_package orchestrates the functions as expected."""
 
-        with tempfile.TemporaryDirectory() as output_directory:
+        with patch(self.module + "dependencies.collect_and_merge_requirements") as collect_mock, \
+            patch(self.module + "dependencies.create_or_return_zipped_dependencies") as zip_mock:
 
-            artifact_path = target_module.build_lambda_deployment_package(
-                code_directories=[path],
-                output_path=output_directory+"/package.zip"
+            zip_mock.return_value = "some/path.zip"
+
+            result = target_module.build_layer_package(
+                ["abc"]
             )
 
-            self.assertTrue(artifact_path.endswith(".zip"))
+            collect_mock.assert_called_with("abc")
 
-    def test_build_python_requirements_asset(self):
-        """
-        NOTE: This is technically an integration test!
-        Assert the build_python_requirements_asset function is able to build a .zip for
-        a simple requirements.txt
-        """
-
-        requirements_file_content = "pytz==2020.1"
-
-        with tempfile.TemporaryDirectory() as input_directory,\
-            tempfile.TemporaryDirectory() as output_directory:
-
-            # Set up the requirements.txt
-            with open(input_directory + "requirements.txt", "w") as handle:
-                handle.write(requirements_file_content)
-
-            # Build the Asset
-            asset = target_module.build_python_requirements_asset(
-                requirements_file_path=input_directory + "requirements.txt",
-                output_directory_path=output_directory
+            zip_mock.assert_called_with(
+                requirements_information=ANY,
+                output_directory_path=ANY,
+                prefix_in_zip="python"
             )
 
-            self.assertIn(".zip", asset, msg="Should return the path of a .zip")
-
+            self.assertEqual("some/path.zip", result)
 
 if __name__ == "__main__":
     unittest.main()

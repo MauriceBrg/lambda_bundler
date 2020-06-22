@@ -85,7 +85,9 @@ def create_zipped_dependencies(requirements_information: str,
 
     # TODO: This could be refactored into smaller building blocks, it contains a lot of logic.
 
-    directory_name = util.hash_string(requirements_information)
+    # Add the prefix to the hash so we distinguish between layers and regular packages
+    prefix_seed = prefix_in_zip or ""
+    directory_name = util.hash_string(requirements_information + prefix_seed)
 
     build_directory = os.path.join(output_directory_path, directory_name)
 

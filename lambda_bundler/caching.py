@@ -1,15 +1,4 @@
-import os
-import tempfile
-
-ENV_LAMBU_CACHE_DIR = "LAMBDA_BUNDLER_CACHE_DIR"
-
-_CACHE_DIR = os.environ.get(ENV_LAMBU_CACHE_DIR, f"{tempfile.gettempdir()}/lambda_bundler_cache/")
-
-def set_cache_dir(path_to_cache_directory: str) -> None:
-    global _CACHE_DIR  # pylint: disable=global-statement
-    _CACHE_DIR = path_to_cache_directory
-
-STRATEGY = """
+"""
 Caching isn't that easy in our case.
 Pip has an internal cache mechanism, which means the packages won't get downloaded for every build.
 That's a good thing and already saves a lot of time. Extracting/Copying them and zipping them
@@ -55,23 +44,11 @@ Lambda with dependencies:
 6. Zip CACHE_DIR/{hash} and store as CACHE_DIR/{hash}.zip
 7. Delete CACHE_DIR/{hash} directory (No longer needed)
 8. Hash list of Code directories -> {code_hash}
-9. Copy CACHE_DIR/{hash}.zip to BUILD_DIR/{code_hash}.zip  (otherwise we'd get problems with same dependencies and different code leading to the same deployment package)
+9. Copy CACHE_DIR/{hash}.zip to BUILD_DIR/{code_hash}.zip
+   (otherwise we'd get problems with same dependencies and different code leading to the same deployment package)
 10. Extend BUILD_DIR/{code_hash}.zip with additional code
 11. Return BUILD_DIR/{code_hash}.zip
 PROBLEM: Same dependencies + different code lead to same .zip!
 
 Possible cross-platform builds could be done using docker instead of steps 4-6.
-
->>> def collect_and_merge_requirements(*requirement_files: typing.List[str]) -> str:
-        DONE
-
->>> def hash_string(string_to_hash: str) -> str:
-        DONE
-
->>> def create_zipped_dependencies(requirements_information: str, output_directory_path: str, prefix_in_zip: str = None) -> str:
-        DONE
-
->>> def extend_zip(path_to_zip: str, list_of_directories: typing.List[str], exclude_patterns: typing.List[str] = None) -> str:
-        DONE
-
 """

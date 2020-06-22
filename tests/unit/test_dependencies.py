@@ -97,7 +97,7 @@ class DependenciesTestCases(unittest.TestCase):
                 prefix_in_zip="python"
             )
 
-            hash_mock.assert_called_with(requirements)
+            hash_mock.assert_called_with(requirements + "python")
             install_mock.assert_called_with(
                 path_to_requirements=os.path.join(working_directory, "bla", "python", "requirements.txt"),
                 path_to_target_directory=os.path.join(working_directory, "bla", "python")
