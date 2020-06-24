@@ -4,7 +4,7 @@ Pip has an internal cache mechanism, which means the packages won't get download
 That's a good thing and already saves a lot of time. Extracting/Copying them and zipping them
 afterwards still takes significant time (at least a couple seconds for everythign non-trivial) and
 that's why caching is a good idea. Essentially we can merge all input requirement files and hash
-the result. The result can then be used as the cache key, i.e. the 
+the result. The result can then be used as the cache key, i.e. the
 
 Maybe we need two staging directories
 - CACHE_DIR

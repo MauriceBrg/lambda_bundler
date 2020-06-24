@@ -5,10 +5,15 @@ import shutil
 import tempfile
 import unittest
 
+from unittest.mock import patch
+
 import lambda_bundler.util as target_module
 
 class UtilTestCases(unittest.TestCase):
     """Test cases for the util module"""
+
+    def setUp(self):
+        self.module = "lambda_bundler.util."
 
     def test_hash_string(self):
         """Asserts hash_string returns the correct sha256 hexdigest"""
@@ -88,6 +93,24 @@ class UtilTestCases(unittest.TestCase):
             # Assert that the content of our initial zip is there as well
             self.assertTrue(os.path.exists(os.path.join(assertion_directory, "test.txt")))
 
+    def test_get_build_dir(self):
+        """Assert that get_build_dir works with the environment variable"""
+
+        backup_env = os.environ.get(target_module.BUILD_DIR_ENV)
+
+        os.environ[target_module.BUILD_DIR_ENV] = "test"
+
+        self.assertEqual("test", target_module.get_build_dir())
+
+        del os.environ[target_module.BUILD_DIR_ENV]
+
+        with patch(self.module + "tempfile.gettempdir") as get_temp_mock:
+            get_temp_mock.return_value = "test"
+
+            self.assertEqual(os.path.join("test", "lambda_bundler_builds"), target_module.get_build_dir())
+
+        if backup_env is not None:
+            os.environ[target_module.BUILD_DIR_ENV] = backup_env
 
 if __name__ == "__main__":
     unittest.main()

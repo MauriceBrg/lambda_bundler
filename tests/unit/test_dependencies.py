@@ -180,5 +180,8 @@ class DependenciesTestCases(unittest.TestCase):
 
             self.assertEqual("zipped", result)
 
+# TODO: test build_lambda_package_without_dependencies
+# TODO: test build_lambda_package_with_dependencies
+# TODO: test install_dependencies
 if __name__ == "__main__":
     unittest.main()

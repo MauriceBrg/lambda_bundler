@@ -36,5 +36,42 @@ class TestBundler(unittest.TestCase):
 
             self.assertEqual("some/path.zip", result)
 
+    def test_build_lambda_package(self):
+        """Assert this function calls the right subroutines"""
+
+        with patch(self.module + "dependencies.build_lambda_package_without_dependencies") as wo_mock:
+
+            wo_mock.return_value = "without_dependencies.zip"
+
+            return_value = target_module.build_lambda_package(
+                code_directories=["abc"],
+                exclude_patterns=["def"]
+            )
+
+            wo_mock.assert_called_once_with(
+                code_directories=["abc"],
+                exclude_patterns=["def"]
+            )
+
+            self.assertEqual("without_dependencies.zip", return_value)
+
+        with patch(self.module + "dependencies.build_lambda_package_with_dependencies") as w_mock:
+
+            w_mock.return_value = "with_dependencies.zip"
+
+            result = target_module.build_lambda_package(
+                code_directories=["abc"],
+                requirement_files=["ghi"],
+                exclude_patterns=["def"]
+            )
+
+            w_mock.assert_called_once_with(
+                code_directories=["abc"],
+                requirement_files=["ghi"],
+                exclude_patterns=["def"]
+            )
+
+            self.assertEqual("with_dependencies.zip", result)
+
 if __name__ == "__main__":
     unittest.main()

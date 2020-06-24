@@ -6,9 +6,11 @@ import tempfile
 import typing
 import zipfile
 
-__DEFAULT_EXCLUDE_LIST = [
+DEFAULT_EXCLUDE_LIST = [
     "__pycache__"
 ]
+
+BUILD_DIR_ENV = "LAMBDA_BUNDLER_BUILD_DIR"
 
 def get_content_of_files(*list_of_paths: typing.List[str]) -> typing.List[str]:
     """
@@ -55,7 +57,7 @@ def extend_zip(path_to_zip: str, code_directories: typing.List[str],
 
     # Build the exclude patterns
     exclude_patterns = exclude_patterns or []
-    exclude_patterns = exclude_patterns + __DEFAULT_EXCLUDE_LIST
+    exclude_patterns = exclude_patterns + DEFAULT_EXCLUDE_LIST
     ignore_during_copy = shutil.ignore_patterns(*exclude_patterns)
 
     # Create a working directory, copy all source directories there with the exclude list
@@ -96,3 +98,15 @@ def extend_zip(path_to_zip: str, code_directories: typing.List[str],
                     arcname=os.path.join(root.replace(working_directory, ""), empty_dir),
                     compress_type=zipfile.ZIP_STORED
                 )
+
+def get_build_dir() -> str:
+    """
+    Returns the path to the build directory.
+
+    :return: Path to the build directory.
+    :rtype: str
+    """
+    return os.environ.get(
+        BUILD_DIR_ENV,
+        os.path.join(tempfile.gettempdir(), "lambda_bundler_builds")
+    )

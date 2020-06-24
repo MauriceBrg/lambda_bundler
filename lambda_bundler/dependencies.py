@@ -5,6 +5,7 @@ import pathlib
 import shutil
 import subprocess
 import sys
+import tempfile
 import typing
 
 import lambda_bundler.util as util
@@ -160,3 +161,93 @@ def create_or_return_zipped_dependencies(requirements_information: str,
         output_directory_path=output_directory_path,
         prefix_in_zip=prefix_in_zip
     )
+
+def build_lambda_package_without_dependencies(
+        code_directories: typing.List[str],
+        exclude_patterns: typing.List[str] = None) -> str:
+    """
+    This function builds a deployment package for lambda without dependencies.
+    It bundles the code from the code_directories while excluding all files/
+    directories from the exclude_patterns list.
+
+    :param code_directories: List of paths to directories to include in the zip.
+    :type code_directories: typing.List[str]
+    :param exclude_patterns: List of patterns that should be excluded from the zip, defaults to None
+    :type exclude_patterns: typing.List[str], optional
+    :return: Path to the zipped artifact.
+    :rtype: str
+    """
+
+    # Build the exclude patterns
+    exclude_patterns = exclude_patterns or []
+    exclude_patterns = exclude_patterns + util.DEFAULT_EXCLUDE_LIST
+    ignore_during_copy = shutil.ignore_patterns(*exclude_patterns)
+
+    # Create a working directory, copy all source directories there with the exclude list
+    with tempfile.TemporaryDirectory() as working_directory:
+
+        for directory in code_directories:
+
+            # Get the name of the directory -> "path/to/directory" would return "directory"
+            source_directory_name = os.path.basename(directory)
+
+            # This is the directory that will ultimately be zipped
+            target_directory = os.path.join(working_directory, source_directory_name)
+
+            # Copy the source directory to the working directory
+            shutil.copytree(directory, target_directory, ignore=ignore_during_copy)
+
+        target_zip_name = util.hash_string("".join(code_directories))
+        zip_path = os.path.join(util.get_build_dir(), target_zip_name)
+
+        # Zip the directory after removing a potential .zip suffix
+        shutil.make_archive(zip_path, "zip", working_directory)
+        return zip_path + ".zip"
+
+def build_lambda_package_with_dependencies(
+        code_directories: typing.List[str],
+        requirement_files: typing.List[str],
+        exclude_patterns: typing.List[str] = None) -> str:
+    """
+    This function bundles the code of one or more code_directories stripped
+    from all files/directories that match the exclude_patterns together with
+    the dependencies in requirement_files and returns a zip archive for deployment
+    in AWS lambda.
+
+    :param code_directories: List of paths to the directories that hold the code.
+    :type code_directories: typing.List[str]
+    :param requirement_files: List of paths to requirement files with the dependencies.
+    :type requirement_files: typing.List[str]
+    :param exclude_patterns: List of patterns to exclude from code_directories, defaults to None
+    :type exclude_patterns: typing.List[str], optional
+    :return: Path to the zipped artifacts.
+    :rtype: str
+    """
+
+    collected_dependencies = collect_and_merge_requirements(
+        *requirement_files
+    )
+
+    requirements_zip = create_or_return_zipped_dependencies(
+        requirements_information=collected_dependencies,
+        output_directory_path=util.get_build_dir(),
+    )
+
+    # Hash the requirement files and code directories in order to get
+    # a unique hash for this combination
+    target_zip_name = util.hash_string(
+        "".join(code_directories) + "".join(requirement_files)) + ".zip"
+    zip_path = os.path.join(util.get_build_dir(), target_zip_name)
+
+    shutil.copyfile(
+        src=requirements_zip,
+        dst=zip_path
+    )
+
+    util.extend_zip(
+        path_to_zip=zip_path,
+        code_directories=code_directories,
+        exclude_patterns=exclude_patterns
+    )
+
+    return zip_path
