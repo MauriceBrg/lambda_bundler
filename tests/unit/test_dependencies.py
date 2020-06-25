@@ -5,7 +5,7 @@ import shutil
 import tempfile
 import unittest
 
-from unittest.mock import patch
+from unittest.mock import patch, ANY
 
 import lambda_bundler.dependencies as target_module
 
@@ -180,8 +180,88 @@ class DependenciesTestCases(unittest.TestCase):
 
             self.assertEqual("zipped", result)
 
-# TODO: test build_lambda_package_without_dependencies
-# TODO: test build_lambda_package_with_dependencies
-# TODO: test install_dependencies
+    def test_build_lambda_package_without_dependencies(self):
+        """Assert build_lambda_without_dependencies packages code correctly"""
+
+        with tempfile.TemporaryDirectory() as source_directory, \
+            tempfile.TemporaryDirectory() as build_directory, \
+            tempfile.TemporaryDirectory() as assertion_directory, \
+            patch(self.module + "util.get_build_dir") as gbd_mock:
+
+            gbd_mock.return_value = build_directory
+
+            directories_in_source = ["src/lambda", "tests"]
+
+            for directory in directories_in_source:
+                pathlib.Path(os.path.join(source_directory, directory)).mkdir(parents=True, exist_ok=True)
+
+            pathlib.Path(os.path.join(source_directory, "initial")).mkdir(parents=True, exist_ok=True)
+            with open(os.path.join(source_directory, "initial", "test.txt"), "w") as handle:
+                handle.write("test-content")
+
+            with open(os.path.join(source_directory, "src", "lambda", "handler.py"), "w") as handle:
+                handle.write("test-content")
+
+            zip_archive = target_module.build_lambda_package_without_dependencies(
+                code_directories=[
+                    os.path.join(source_directory, directories_in_source[0]),
+                    os.path.join(source_directory, directories_in_source[1])
+                ]
+            )
+
+            self.assertTrue(zip_archive.endswith(".zip"))
+            self.assertTrue(os.path.exists(zip_archive))
+
+            shutil.unpack_archive(zip_archive, assertion_directory)
+
+            # The initial directory is not part of the code_directories
+            self.assertFalse(os.path.exists(os.path.join(assertion_directory, "initial", "test.txt")))
+
+            self.assertTrue(os.path.exists(os.path.join(assertion_directory, "lambda", "handler.py")))
+
+    def test_build_lambda_package_with_dependencies(self):
+        """Assert that build_lambda_package_with_dependencies orchestrates the correct subroutines"""
+
+        with patch(self.module + "collect_and_merge_requirements") as cam_mock, \
+                patch(self.module + "create_or_return_zipped_dependencies") as create_dep_mock, \
+                patch(self.module + "util.hash_string") as hash_mock, \
+                patch(self.module + "shutil.copyfile") as copy_mock, \
+                patch(self.module + "util.extend_zip") as extend_mock:
+
+            cam_mock.return_value = "collected_requirements"
+            create_dep_mock.return_value = "dependencies.zip"
+            hash_mock.return_value = "hashed"
+
+            result = target_module.build_lambda_package_with_dependencies(
+                code_directories=["a", "b", "c"],
+                requirement_files=["d", "e"]
+            )
+
+            cam_mock.assert_called_with("d", "e")
+            create_dep_mock.assert_called_with(
+                requirements_information="collected_requirements",
+                output_directory_path=ANY
+            )
+            hash_mock.assert_called_with("abcde")
+            copy_mock.assert_called_once()
+            extend_mock.assert_called_once()
+
+            self.assertTrue(result.endswith("hashed.zip"))
+
+
+    def test_install_dependencies(self):
+        """Assert install_dependencies uses subprocess_output to install dependencies"""
+
+        # NOTE: This is not a complete test of the install, that's what we do with integration tests.
+
+        with patch(self.module + "subprocess.check_output") as subprocess_mock:
+
+            target_module.install_dependencies(
+                path_to_requirements="abc",
+                path_to_target_directory="def"
+            )
+
+            subprocess_mock.assert_called_once()
+
 if __name__ == "__main__":
     unittest.main()
