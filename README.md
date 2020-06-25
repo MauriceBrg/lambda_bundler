@@ -76,6 +76,7 @@ path_to_deployment_artifact = build_lambda_package(
 
 # path_to_deployment_artifact now contains the path to the zip archive
 ```
+
 ## Configuration
 
 The library uses a working directory to build and cache packages.

@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="lambda-bundler",
-    version="0.0.1",
+    version="0.0.1-beta",
     author="Maurice Borgmeier",
     description="A utility to bundle python code and/or dependencies for deployment to AWS Lambda",
     long_description=long_description,
@@ -24,6 +24,9 @@ setuptools.setup(
             "pylint==2.5.3",
             "pytest==5.4.3",
             "pytest-cov==2.10.0",
+            "setuptools==40.8",
+            "twine==3.2.0",
+            "wheel==0.34.2"
         ]
     }
 )
