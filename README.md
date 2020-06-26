@@ -1,5 +1,10 @@
 # Lambda Bundler
 
+![Lambda-Bundler-Build](https://github.com/MauriceBrg/lambda_bundler/workflows/Lambda-Bundler-Build/badge.svg?branch=master)
+[![Maintainability](https://api.codeclimate.com/v1/badges/d8e6323930db603aad30/maintainability)](https://codeclimate.com/github/MauriceBrg/lambda_bundler/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/d8e6323930db603aad30/test_coverage)](https://codeclimate.com/github/MauriceBrg/lambda_bundler/test_coverage)
+[![PyPI version](https://badge.fury.io/py/lambda-bundler.svg)](https://badge.fury.io/py/lambda-bundler)
+
 Lambda Bundler helps you package your python lambda functions and their dependencies for deployment to AWS.
 
 It supports three different modes:
