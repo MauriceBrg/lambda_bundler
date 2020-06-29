@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ master ]
 
+  # Trigger on release, this will cause the upload to Pypi
+  release:
+    types:
+      - created
+
 jobs:
 
   build_python36:
