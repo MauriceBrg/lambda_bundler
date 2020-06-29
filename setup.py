@@ -1,12 +1,40 @@
 """Packaging configuration"""
+import json
+import os
 import setuptools
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+VERSION = "0.0.1"
+
+def get_release_from_pipeline():
+    """
+    If the build has been triggered by a release event in a github pipeline,
+    we take the version number from the release event. If not we return the
+    version constant.
+    """
+
+    if "GITHUB_EVENT_PATH" in os.environ:
+        with open(os.environ["GITHUB_EVENT_PATH"]) as event_handle:
+            event = json.load(event_handle)
+
+        if "release" in event:
+
+            release_name: str = event["release"]["tag_name"]
+            # Strip the leading v if it exists
+            version_number = release_name[1:] if release_name.startswith("v") else release_name
+            print(f"Setting the version number to {version_number} from the Github Pipeline")
+
+            return version_number
+
+    return VERSION
+
+VERSION = get_release_from_pipeline()
+
 setuptools.setup(
     name="lambda-bundler",
-    version="0.0.1-b2",
+    version=VERSION,
     author="Maurice Borgmeier",
     description="A utility to bundle python code and/or dependencies for deployment to AWS Lambda",
     long_description=long_description,
