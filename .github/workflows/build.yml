@@ -17,6 +17,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - name: Show Env
+        run: |
+          echo $GITHUB_EVENT_PATH
+          cat $GITHUB_EVENT_PATH
+
       - name: Checkout 
         uses: actions/checkout@v2
       
