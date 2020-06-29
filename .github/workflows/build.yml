@@ -42,3 +42,18 @@ jobs:
       
       - name: Run Pylint
         run: pylint lambda_bundler
+      
+      - name: Create distribution 📦
+        run: python3 setup.py sdist bdist_wheel
+      
+      - name: Publish artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: python-packages
+          path: dist/
+    
+      - name: Publish distribution 📦 to PyPI
+        if: startsWith(github.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.PYPI_LAMBDA_BUNDLER_TOKEN }}

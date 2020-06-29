@@ -13,7 +13,7 @@ It supports three different modes:
 - Package code-only dependencies from multiple directories for deployment to Lambda
 - Package your own code and external dependencies into a single zip for deployment to Lambda
 
-Dependencies will be cached if possible.
+Dependencies will be cached if possible in order to provide a fast build experience.
 
 ## Installation
 
@@ -88,12 +88,6 @@ The library uses a working directory to build and cache packages.
 By default this is located in the `lambda_bundler_builds` folder in your temporary directory as determined by [python](https://docs.python.org/3/library/tempfile.html#tempfile.gettempdir).
 
 If you'd like to change that, you can set the `LAMBDA_BUNDLER_BUILD_DIR` environment variable and point it to another directory.
-
-## How it works
-
-In contrast to my earlier (closed source) attempts at solving the problem of packaging Lambda functions with their dependencies, this is focussed on caching effectively, because I can't stand long build times.
-
-TODO
 
 ## Known Limitations
 
