@@ -44,6 +44,47 @@ def hash_string(string_to_hash: str) -> str:
     """
     return hashlib.sha256(string_to_hash.encode("utf-8")).hexdigest()
 
+def _collect_sources(code_directories: typing.List[str], exclude_patterns: typing.List[str], working_directory: str):
+    ignore_during_copy = shutil.ignore_patterns(*exclude_patterns)
+
+    LOGGER.debug("Copying code to staging directory.")
+    for directory in code_directories:
+
+        LOGGER.debug("Copying '%s'", directory)
+        # Get the name of the directory -> "path/to/directory" would return "directory"
+        source_directory_name = os.path.basename(directory)
+
+        # This is the directory that will ultimately be zipped
+        target_directory = os.path.join(working_directory, source_directory_name)
+
+        # Copy the source directory to the working directory
+        shutil.copytree(directory, target_directory, ignore=ignore_during_copy)
+
+def _add_sources_to_zip(zip_file: zipfile.ZipFile, working_directory: str):
+
+    # Now add the contents of the working directory to the EXISTING zip
+    # inspired by https://stackoverflow.com/a/11751948/6485881
+    # and https://stackoverflow.com/a/18295769/6485881
+    for root, directories, files in os.walk(working_directory):
+
+        # Add regular files
+        for name in files:
+            zip_file.write(
+                filename=os.path.join(root, name),
+                arcname=os.path.join(root.replace(working_directory, ""), name),
+                compress_type=zipfile.ZIP_DEFLATED
+            )
+
+        # Handle empty directories, those are annoying in zips
+        empty_dirs = [directory for directory in directories
+                      if os.listdir(os.path.join(root, directory)) == []]
+        for empty_dir in empty_dirs:
+            zip_file.write(
+                filename=os.path.join(root, empty_dir),
+                arcname=os.path.join(root.replace(working_directory, ""), empty_dir),
+                compress_type=zipfile.ZIP_STORED
+            )
+
 def extend_zip(path_to_zip: str, code_directories: typing.List[str],
                exclude_patterns: typing.List[str] = None) -> None:
     """
@@ -63,49 +104,23 @@ def extend_zip(path_to_zip: str, code_directories: typing.List[str],
     # Build the exclude patterns
     exclude_patterns = exclude_patterns or []
     exclude_patterns = exclude_patterns + DEFAULT_EXCLUDE_LIST
-    ignore_during_copy = shutil.ignore_patterns(*exclude_patterns)
 
     # Create a working directory, copy all source directories there with the exclude list
     with tempfile.TemporaryDirectory() as working_directory, \
         zipfile.ZipFile(path_to_zip, mode="a") as zip_file:
 
-        LOGGER.debug("Copying code to staging directory.")
-        for directory in code_directories:
-
-            LOGGER.debug("Copying '%s'", directory)
-            # Get the name of the directory -> "path/to/directory" would return "directory"
-            source_directory_name = os.path.basename(directory)
-
-            # This is the directory that will ultimately be zipped
-            target_directory = os.path.join(working_directory, source_directory_name)
-
-            # Copy the source directory to the working directory
-            shutil.copytree(directory, target_directory, ignore=ignore_during_copy)
+        _collect_sources(
+            code_directories=code_directories,
+            exclude_patterns=exclude_patterns,
+            working_directory=working_directory
+        )
 
         LOGGER.debug("Extending '%s' with code from the staging directory", path_to_zip)
-        # Now add the contents of the working directory to the EXISTING zip
-        # inspired by https://stackoverflow.com/a/11751948/6485881
-        # and https://stackoverflow.com/a/18295769/6485881
-        empty_dirs = []
-        for root, directories, files in os.walk(working_directory):
 
-            # Add regular files
-            for name in files:
-                zip_file.write(
-                    filename=os.path.join(root, name),
-                    arcname=os.path.join(root.replace(working_directory, ""), name),
-                    compress_type=zipfile.ZIP_DEFLATED
-                )
-
-            # Handle empty directories, those are annoying in zips
-            empty_dirs = [directory for directory in directories
-                          if os.listdir(os.path.join(root, directory)) == []]
-            for empty_dir in empty_dirs:
-                zip_file.write(
-                    filename=os.path.join(root, empty_dir),
-                    arcname=os.path.join(root.replace(working_directory, ""), empty_dir),
-                    compress_type=zipfile.ZIP_STORED
-                )
+        _add_sources_to_zip(
+            zip_file=zip_file,
+            working_directory=working_directory
+        )
         LOGGER.debug("Zip extended.")
 
 def get_build_dir() -> str:

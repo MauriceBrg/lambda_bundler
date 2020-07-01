@@ -6,7 +6,13 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-VERSION = "0.0.1"
+VERSION = "0.0.3"
+
+ENV_GITHUB_EVENT_PATH = "GITHUB_EVENT_PATH"
+
+def _load_event() -> dict:
+    with open(os.environ[ENV_GITHUB_EVENT_PATH]) as event_handle:
+        return json.load(event_handle)
 
 def get_release_from_pipeline():
     """
@@ -15,9 +21,9 @@ def get_release_from_pipeline():
     version constant.
     """
 
-    if "GITHUB_EVENT_PATH" in os.environ:
-        with open(os.environ["GITHUB_EVENT_PATH"]) as event_handle:
-            event = json.load(event_handle)
+    if ENV_GITHUB_EVENT_PATH in os.environ:
+
+        event = _load_event()
 
         if "release" in event:
 
@@ -43,6 +49,9 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
