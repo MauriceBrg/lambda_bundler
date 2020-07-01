@@ -1,12 +1,15 @@
 """
 Contains functions to bundle python dependencies.
 """
-
+import logging
 import typing
 
 import lambda_bundler.dependencies as dependencies
 import lambda_bundler.util as util
 
+LOGGER = logging.getLogger("lambda_bundler")
+
+@util.return_empty_if_skip_install
 def build_layer_package(requirement_files: typing.List[str]) -> str:
     """
     Builds the zip archive for a lambda layer from a list of requirement files.
@@ -27,6 +30,7 @@ def build_layer_package(requirement_files: typing.List[str]) -> str:
         prefix_in_zip="python"
     )
 
+@util.return_empty_if_skip_install
 def build_lambda_package(code_directories: typing.List[str],
                          requirement_files: typing.List[str] = None,
                          exclude_patterns: typing.List[str] = None) -> str:

@@ -10,8 +10,7 @@ import typing
 
 import lambda_bundler.util as util
 
-LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.INFO)
+LOGGER = logging.getLogger("lambda_bundler")
 
 def install_dependencies(path_to_requirements: str, path_to_target_directory: str) -> str:
     """
@@ -28,6 +27,7 @@ def install_dependencies(path_to_requirements: str, path_to_target_directory: st
     # Use the pip module to recursively (-r) install all packages from
     # path_to_requirements into (-t) path_to_target_directory while
     # ignoring already installed packages (-I)
+    LOGGER.debug("Installing '%s' to '%s'", path_to_requirements, path_to_target_directory)
     call = [sys.executable, "-m", "pip", "install", "-r", path_to_requirements,
             "-t", path_to_target_directory, "-I"]
     return subprocess.check_output(call)

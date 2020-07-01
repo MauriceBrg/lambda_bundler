@@ -112,5 +112,32 @@ class UtilTestCases(unittest.TestCase):
         if backup_env is not None:
             os.environ[target_module.BUILD_DIR_ENV] = backup_env
 
+    def test_return_empty_if_skip_install(self):
+        """Assert the decorator works as expected."""
+
+        prev = os.environ.get("LAMBDA_BUNDLER_SKIP_INSTALL")
+
+        os.environ["LAMBDA_BUNDLER_SKIP_INSTALL"] = "true"
+
+        @target_module.return_empty_if_skip_install
+        def inner():
+            return "installed"
+
+        with tempfile.TemporaryDirectory() as temp:
+
+            os.environ[target_module.BUILD_DIR_ENV] = temp
+
+            result = inner()
+            self.assertTrue(result.endswith("empty.zip"))
+
+            second_result = inner()
+            self.assertTrue(second_result.endswith("empty.zip"))
+
+            del os.environ["LAMBDA_BUNDLER_SKIP_INSTALL"]
+            self.assertEqual("installed", inner())
+
+        if prev is not None:
+            os.environ["LAMBDA_BUNDLER_SKIP_INSTALL"] = prev
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,10 +1,15 @@
 """Contains several utility functions for the lambda_bundler."""
+import functools
 import hashlib
+import logging
 import os
+import pathlib
 import shutil
 import tempfile
 import typing
 import zipfile
+
+LOGGER = logging.getLogger("lambda_bundler")
 
 DEFAULT_EXCLUDE_LIST = [
     "__pycache__"
@@ -64,8 +69,10 @@ def extend_zip(path_to_zip: str, code_directories: typing.List[str],
     with tempfile.TemporaryDirectory() as working_directory, \
         zipfile.ZipFile(path_to_zip, mode="a") as zip_file:
 
+        LOGGER.debug("Copying code to staging directory.")
         for directory in code_directories:
 
+            LOGGER.debug("Copying '%s'", directory)
             # Get the name of the directory -> "path/to/directory" would return "directory"
             source_directory_name = os.path.basename(directory)
 
@@ -75,6 +82,7 @@ def extend_zip(path_to_zip: str, code_directories: typing.List[str],
             # Copy the source directory to the working directory
             shutil.copytree(directory, target_directory, ignore=ignore_during_copy)
 
+        LOGGER.debug("Extending '%s' with code from the staging directory", path_to_zip)
         # Now add the contents of the working directory to the EXISTING zip
         # inspired by https://stackoverflow.com/a/11751948/6485881
         # and https://stackoverflow.com/a/18295769/6485881
@@ -98,6 +106,7 @@ def extend_zip(path_to_zip: str, code_directories: typing.List[str],
                     arcname=os.path.join(root.replace(working_directory, ""), empty_dir),
                     compress_type=zipfile.ZIP_STORED
                 )
+        LOGGER.debug("Zip extended.")
 
 def get_build_dir() -> str:
     """
@@ -110,3 +119,38 @@ def get_build_dir() -> str:
         BUILD_DIR_ENV,
         os.path.join(tempfile.gettempdir(), "lambda_bundler_builds")
     )
+
+def _create_or_return_empty_zip() -> str:
+    path_to_empty_zip = os.path.join(get_build_dir(), "empty.zip")
+    if not os.path.exists(path_to_empty_zip):
+        # Create an empty file
+        LOGGER.debug("Creating empty.zip")
+        pathlib.Path(path_to_empty_zip).touch()
+    return path_to_empty_zip
+
+def return_empty_if_skip_install(function: typing.Callable,
+                                 environment_variale_name="LAMBDA_BUNDLER_SKIP_INSTALL") -> typing.Callable:
+    """
+    Decorator that returns an empty zip if the installation should be skipped.
+
+    :param function: Function to decorate.
+    :type function: typing.Callable
+    :param environment_variale_name: Name of the environment variable to evaluate, defaults to "LAMBDA_BUNDLER_SKIP_INSTALL"
+    :type environment_variale_name: str, optional
+    :return: The decorated function.
+    :rtype: typing.Callable
+    """
+
+    @functools.wraps(function)
+    def wrapped(*args, **kwargs):
+
+        skip_install_value = os.environ.get(environment_variale_name, "false")
+
+        if skip_install_value.lower() in ["true", "t", "1", "y", "yes"]:
+            LOGGER.info("Skipping installation of dependencies.")
+            return _create_or_return_empty_zip()
+
+        # No skip
+        return function(*args, **kwargs)
+
+    return wrapped

@@ -89,6 +89,8 @@ By default this is located in the `lambda_bundler_builds` folder in your tempora
 
 If you'd like to change that, you can set the `LAMBDA_BUNDLER_BUILD_DIR` environment variable and point it to another directory.
 
+If you're using the Cloud Development Kit and just want to do a `cdk synth` to check your infrastructure code without actually deploying it, you can set the environment variable `LAMBDA_BUNDLER_SKIP_INSTALL` to `true`. This will skip installing dependencies and bundling the code, which makes the process a lot faster - although it won't work when you try to deploy it with the variable set to `true`.
+
 ## Known Limitations
 
 - Packages are downloaded and built on your local machine, that means you might experience problems with libraries that use C-extensions if your platform is not Linux. Building packages with Docker is something I'd like to look into if there's a demand for that.
