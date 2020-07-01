@@ -150,10 +150,12 @@ def create_or_return_zipped_dependencies(requirements_information: str,
     :rtype: str
     """
 
-    artifact_name = util.hash_string(requirements_information)
+    prefix_seed = prefix_in_zip or ""
+    artifact_name = util.hash_string(requirements_information + prefix_seed)
 
     artifact_path = os.path.join(output_directory_path, f"{artifact_name}.zip")
     if os.path.exists(artifact_path):
+        LOGGER.debug("Using cached dependencies from %s", artifact_path)
         return artifact_path
 
     return create_zipped_dependencies(

@@ -6,7 +6,7 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-VERSION = "0.0.3"
+VERSION = "0.0.4"
 
 ENV_GITHUB_EVENT_PATH = "GITHUB_EVENT_PATH"
 
