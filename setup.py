@@ -6,7 +6,7 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-VERSION = "0.0.4"
+VERSION = "0.1.0"
 
 ENV_GITHUB_EVENT_PATH = "GITHUB_EVENT_PATH"
 
@@ -21,20 +21,22 @@ def get_release_from_pipeline():
     version constant.
     """
 
-    if ENV_GITHUB_EVENT_PATH in os.environ:
+    try:
 
         event = _load_event()
 
-        if "release" in event:
+        release_name: str = event["release"]["tag_name"]
+        # Strip the leading v if it exists
+        version_number = release_name[1:] if release_name.startswith("v") else release_name
+        print(f"Setting the version number to {version_number} from the Github Pipeline")
 
-            release_name: str = event["release"]["tag_name"]
-            # Strip the leading v if it exists
-            version_number = release_name[1:] if release_name.startswith("v") else release_name
-            print(f"Setting the version number to {version_number} from the Github Pipeline")
-
-            return version_number
-
-    return VERSION
+        return version_number
+    except KeyError:
+        # We'll get a key error if the Environment variable
+        # isn't set or the release key is not in the event
+        # In both cases, we want to stay with the regular
+        # version number from this file
+        return VERSION
 
 VERSION = get_release_from_pipeline()
 
@@ -48,6 +50,7 @@ setuptools.setup(
     url="https://github.com/MauriceBrg/lambda_bundler",
     packages=setuptools.find_packages(),
     classifiers=[
+        "Intended Audience :: Developers",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",

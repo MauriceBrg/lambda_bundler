@@ -93,6 +93,12 @@ If you'd like to change that, you can set the `LAMBDA_BUNDLER_BUILD_DIR` environ
 
 If you're using the Cloud Development Kit and just want to do a `cdk synth` to check your infrastructure code without actually deploying it, you can set the environment variable `LAMBDA_BUNDLER_SKIP_INSTALL` to `true`. This will skip installing dependencies and bundling the code, which makes the process a lot faster - although it won't work when you try to deploy it with the variable set to `true`.
 
+## Demo / Example
+
+For an example of how to use this, I suggest you check out the [demo repository](https://github.com/MauriceBrg/lambda-bundler-demo) which includes a CDK app that deploys three lambda functions with dependencies of different sizes.
+If you take a closer look at the [build pipeline](https://github.com/MauriceBrg/lambda-bundler-demo/actions?query=workflow%3ALambda-Bundler-Demo-Build) you'll see, how effective the caching is.
+
+
 ## Known Limitations
 
 - Packages are downloaded and built on your local machine, that means you might experience problems with libraries that use C-extensions if your platform is not Linux. Building packages with Docker is something I'd like to look into if there's a demand for that.
