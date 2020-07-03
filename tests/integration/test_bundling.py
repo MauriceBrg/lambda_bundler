@@ -80,6 +80,9 @@ class LayerTestCases(unittest.TestCase):
                 os.path.join(assertion_directory, "python", "certifi")
             ))
 
+class PackageTestCase(unittest.TestCase):
+    """Test cases for build_lambda_package"""
+
     def test_build_lambda_package_without_dependencies(self):
         """Assert a lambda package without dependencies get's put together as expected"""
 

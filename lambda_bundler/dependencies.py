@@ -48,7 +48,6 @@ def merge_requirement_files(*file_contents: typing.List[str]) -> str:
 
     return "\n".join(sorted(output_list))
 
-
 def collect_and_merge_requirements(*requirement_files: typing.List[str]) -> str:
     """
     Reads the content of all requirement files in requirement_files and merges it
@@ -83,8 +82,6 @@ def create_zipped_dependencies(requirements_information: str,
     :return: Path to the finished zip archive.
     :rtype: str
     """
-
-    # TODO: This could be refactored into smaller building blocks, it contains a lot of logic.
 
     # Add the prefix to the hash so we distinguish between layers and regular packages
     prefix_seed = prefix_in_zip or ""
